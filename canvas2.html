@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Uplift Lands/Rails</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>WORLD: Upluft</h1>
+        <p>Plots in red are for sale on atomichub</p>
+    </div>
+    <canvas id="canvas"></canvas>
+    <script>
+        const fetchAllData = async () => {
+            let final_list = ""
+            let nextresult = "";
+            let response = await fetch(
+                "https://wax.api.atomicassets.io/atomicmarket/v2/sales?state=1&collection_name=upliftworld&schema_name=keys&match=Upluft&page=1&limit=100&order=desc&sort=created", {
+                    method: "GET",
+                    mode: "cors",
+                }
+            );
+            if (!response.ok) {
+                throw new Error("Data coud not be fetched!");
+            } else {
+                let result = await response.json();
+
+                final_list = result.data;
+
+                let moredata = true;
+                let next = 2;
+                while (moredata) {
+
+                    let nextresponse = await fetch(
+
+                        "https://wax.api.atomicassets.io/atomicmarket/v2/sales?state=1&collection_name=upliftworld&schema_name=keys&match=Upluft&page=" +
+                        next + "&limit=100&order=desc&sort=created",
+
+                        {
+                            method: "GET",
+                            mode: "cors",
+                        }
+                    );
+                    if (!nextresponse.ok) {
+                        throw new Error("Data coud not be fetched!");
+                    } else {
+                        nextresult = await nextresponse.json();
+                        console.log(nextresult.data.length)
+                        if (nextresult.data.length != 0) {
+                            final_list = final_list.concat(nextresult.data)
+                            next = next + 1
+                        } else {
+                            moredata = false;
+                        }
+
+
+                    }
+                }
+
+            }
+
+
+
+            let scale = 1.5;
+            // Define the grid size and cell size
+            var gridSize = 81;
+            var cellSize = 50 / scale;
+
+            // Create the canvas element and set its size
+            var canvas = document.getElementById("canvas");
+            canvas.width = gridSize * cellSize;
+            canvas.height = gridSize * cellSize;
+
+            // Get the canvas context and draw the map image
+            var ctx = canvas.getContext("2d");
+            var img = new Image();
+            img.src = "map.png";
+            img.onload = function () {
+
+                canvas.width = mapImg.width;
+                canvas.height = mapImg.height;
+                ctx.drawImage(mapImg, 0, 0);
+
+                // Draw the grid on top of the map image
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    for (let y = 0; y < canvas.height; y += gridSize) {
+                        ctx.beginPath();
+                        ctx.rect(x, y, gridSize, gridSize);
+                        ctx.strokeStyle = "#FF0000";
+
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            };
+
+
+
+            // Add event listener to the canvas to detect clicks on grid cells
+            canvas.addEventListener("click", function (event) {
+                // Get the clicked cell coordinates
+                var x = Math.floor(event.offsetX / cellSize);
+                var y = Math.floor(event.offsetY / cellSize);
+
+                // Highlight the clicked cell in blue
+                ctx.fillStyle = "blue";
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                console.log(Math.floor(x * cellSize * scale))
+                console.log(Math.floor(y * cellSize * scale))
+            });
+            console.log(final_list);
+            let count = 0;
+            final_list.forEach(element => {
+
+                let [num1, num2] = element.assets[0].immutable_data.location.split(",").map(
+                    numStr => parseInt(numStr));
+                let price = Math.floor(element.price.amount / (Math.pow(10, element.price.token_precision)))
+                console.log(price);
+                if (element.assets[0].immutable_data.world == "Upluft") {
+                    count = count + 1;
+                    if (price < 200) {
+                        ctx.fillStyle = "#3ded97";
+                    } else {
+                        ctx.fillStyle = "#3ded9730";
+                    }
+
+                    var x = Math.floor(num1 / cellSize);
+                    var y = Math.floor(num2 / cellSize);
+                    ctx.fillRect(num1 / scale, num2 / scale, cellSize, cellSize);
+                }
+                // Draw the grid on top of the map image
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 1;
+
+                // Draw horizontal lines
+                for (var i = 0; i <= gridSize; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * cellSize);
+                    ctx.lineTo(gridSize * cellSize, i * cellSize);
+                    ctx.stroke();
+                }
+
+                // Draw vertical lines
+                for (var j = 0; j <= gridSize; j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(j * cellSize, 0);
+                    ctx.lineTo(j * cellSize, gridSize * cellSize);
+                    ctx.stroke();
+                }
+            });
+
+            console.log(count);
+
+
+        };
+
+
+        fetchAllData();
+    </script>
+</body>
+
+</html>

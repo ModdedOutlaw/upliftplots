@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Clickable Grid Overlay</title>
+  <style>
+    canvas {
+      border: 1px solid #000000;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Clickable Grid Overlay</h1>
+  <p>Click on a square to see its coordinates.</p>
+  <canvas id="canvas"></canvas>
+  <script>
+    // Load the map image
+    const mapImg = new Image();
+    mapImg.src = "upluft.jpg";
+
+    // Define the size of each square in the grid
+    const gridSize = 8;
+    var cellSize = 8;
+
+    // Create the canvas element and context
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // When the map image is loaded, draw it on the canvas
+    mapImg.onload = function () {
+      canvas.width = mapImg.width;
+      canvas.height = mapImg.height;
+      ctx.drawImage(mapImg, 0, 0);
+
+      // Draw the grid on top of the map image
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.rect(x, y, gridSize, gridSize);
+          ctx.strokeStyle = "#FF0000";
+
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+     //fill in a particular coordinate
+      //ctx.fillStyle = "red";
+      //ctx.fillRect(550, 300, cellSize, cellSize);
+
+    };
+
+
+
+
+    // Add an event listener to the canvas to handle clicks
+    canvas.addEventListener("click", function (e) {
+      // Get the coordinates of the click relative to the canvas
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Determine which square was clicked based on the grid size
+      const squareX = Math.floor(x / gridSize) * 50;
+      const squareY = Math.floor(y / gridSize) * 50;
+
+
+      var x1 = Math.floor(event.offsetX / cellSize);
+      var y1 = Math.floor(event.offsetY / cellSize);
+      // Highlight the clicked cell in blue
+      ctx.fillStyle = "#FF000060";
+      ctx.fillRect(x1 * cellSize, y1 * cellSize, cellSize, cellSize);
+
+      // Log the coordinates of the clicked square
+      console.log(`Square (${squareX}, ${squareY}) clicked.`);
+    });
+  </script>
+</body>
+
+</html>
